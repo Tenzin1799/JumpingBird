@@ -37,8 +37,11 @@ public class FlappyBird2 extends JPanel implements KeyListener {
     private final int TITLE_TEXT_LOWER_LIMIT = TITLE_TEXT_Y + 2;
     private boolean titleTextFloating = false;
     private int titleTextMovement = 1;
-    private ArrayList<Bird> birdList;
-
+    private int birdListX = boardWidth/10;
+    private int birdListY = boardHeight/3 + 30;
+    private ArrayList<Bird> skinList = new ArrayList<>();
+    private ArrayList<Image> skinImageList = new ArrayList<>();
+    private int birdSelection;  // User chooses which bird they want to play as
 
     // Scores
     private double currentScore = STARTING_SCORE;
@@ -51,8 +54,6 @@ public class FlappyBird2 extends JPanel implements KeyListener {
     private int birdHeight = 24;
     private int birdWidth = 34;
     private Bird bird;
-    private int birdSelection;  // User chooses which bird they want to play as
-    private int[] birdSkinSelector;
 
 
     // Pipe
@@ -84,8 +85,9 @@ public class FlappyBird2 extends JPanel implements KeyListener {
 
         //birdImg = new ImageIcon(getClass().getResource("/theBat.png")).getImage();
         //birdWidth *= 2;
-
         bird = new Bird(birdImg);
+
+        createListOfSkins();
 
         gameLoop = new Timer(1000 / 60, new ActionListener() {
             @Override
@@ -113,6 +115,19 @@ public class FlappyBird2 extends JPanel implements KeyListener {
             }
         });
         titleLoop.start();
+    }
+
+    private void createListOfSkins(){
+        skinImageList.add(new ImageIcon(getClass().getResource("/yellowBird.png")).getImage());
+        skinImageList.add(new ImageIcon(getClass().getResource("/greenBird.png")).getImage());
+        skinImageList.add(new ImageIcon(getClass().getResource("/ghostBird.png")).getImage());
+        skinImageList.add(new ImageIcon(getClass().getResource("/blackBird.png")).getImage());
+        skinImageList.add(new ImageIcon(getClass().getResource("/theBat.png")).getImage());
+        skinImageList.add(new ImageIcon(getClass().getResource("/superDude.png")).getImage());
+
+        for(int i = 0; i < skinImageList.size(); i++){
+            skinList.add(new Bird(skinImageList.get(i)));
+        }
     }
 
     private void updateScore(){
@@ -219,8 +234,6 @@ public class FlappyBird2 extends JPanel implements KeyListener {
         // Draw background
         g.drawImage(bgImg, 0, 0, boardWidth, boardHeight, null);
 
-
-
         // Draw pipe
         for(int i = 0; i < pipesList.size(); i++){
             Pipe pipe = pipesList.get(i);
@@ -241,6 +254,10 @@ public class FlappyBird2 extends JPanel implements KeyListener {
             g.drawString("JUMPING BIRD", TITLE_X, TITLE_Y);
             setFont(g,FONT_NAME, Font.BOLD, TEXT_FONT_SIZE, Color.white);
             g.drawString("Press Space to Start!", TITLE_TEXT_X, titleTextY);
+            // Draw list of skins
+            for(int i = 0; i < skinList.size(); i++){
+                g.drawImage(skinList.get(i).img, birdListX + (i * 50), birdListY, bird.width, bird.height, null);
+            }
         }
     }
 
