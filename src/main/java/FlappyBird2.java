@@ -70,6 +70,7 @@ public class FlappyBird2 extends JPanel implements KeyListener {
     private ArrayList<Pipe> pipesList = new ArrayList<>();
     private int pipeSpeed = PIPE_SPEED_VALUE;
     private int gap = STARTING_GAP;
+    private int pipeStartingX = boardWidth;
 
     // Movements
     private int gravity = 1;
@@ -87,10 +88,8 @@ public class FlappyBird2 extends JPanel implements KeyListener {
         setRequestFocusEnabled(true);
         addKeyListener(this);
         bgImg = new ImageIcon(getClass().getResource("/bg.png")).getImage();
-
-        // Regular Bird
-        birdImg = new ImageIcon(getClass().getResource("/yellowBird.png")).getImage();
         createListOfSkins();
+        bird = skinList.get(birdSelection);
 
         leftArrow = new ImageIcon(getClass().getResource("/leftArrow.png")).getImage();
         rightArrow = new ImageIcon(getClass().getResource("/rightArrow.png")).getImage();
@@ -98,7 +97,6 @@ public class FlappyBird2 extends JPanel implements KeyListener {
         gameLoop = new Timer(1000 / 60, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                bird = skinList.get(birdSelection);
                 move();
                 updateScore();
                 repaint();
@@ -133,7 +131,7 @@ public class FlappyBird2 extends JPanel implements KeyListener {
         skinImageList.add(new ImageIcon(getClass().getResource("/superDude.png")).getImage());
 
         for(int i = 0; i < skinImageList.size(); i++){
-            skinList.add(new Bird(skinImageList.get(i)));
+            skinList.add(new Bird(skinImageList.get(i), startingBirdX, startingBirdY, birdHeight, birdWidth));
         }
     }
 
@@ -150,11 +148,10 @@ public class FlappyBird2 extends JPanel implements KeyListener {
 
     private void placePipes(){
         if(gameStarted && !gameOver) {
-            Pipe topPipe = new Pipe(topPipeImg);
+            Pipe topPipe = new Pipe(topPipeImg, pipeStartingX);
             topPipe.y = (int) (0 - boardHeight / 2 + Math.random() * boardHeight / 4);
 
-
-            Pipe bottomPipe = new Pipe(bottomPipeImg);
+            Pipe bottomPipe = new Pipe(bottomPipeImg, pipeStartingX);
             bottomPipe.y = topPipe.height + topPipe.y + gap;
 
             pipesList.add(topPipe);
@@ -226,7 +223,6 @@ public class FlappyBird2 extends JPanel implements KeyListener {
             topScore = (int)currentScore;
         }
         gameOver = true;
-        gameLoop.stop();
         pipesLoop.stop();
     }
 
@@ -239,36 +235,51 @@ public class FlappyBird2 extends JPanel implements KeyListener {
     private void draw(Graphics g){
         // Draw background
         g.drawImage(bgImg, 0, 0, boardWidth, boardHeight, null);
+        setFont(g,FONT_NAME, Font.BOLD, TEXT_FONT_SIZE, Color.white);
+        if(gameStarted){
+            drawPipesAndBird(g);
+            drawScoreAndPressPHint(g);
+        } else {
+            drawTitleScreen(g);
+            drawSkinSelector(g);
+        }
+    }
 
+    private void drawScoreAndPressPHint(Graphics g){
+        g.drawString("Score: " + (int)(currentScore) + "    High Score: " + topScore, boardWidth/10, boardHeight/10);
+        g.drawString("Press P for Main Menu ",boardWidth/10, boardHeight/20);
+    }
+
+    private void drawPipesAndBird(Graphics g){
+        // Draw bird
+        g.drawImage(bird.img, bird.x, bird.y, bird.width, bird.height, null);
         // Draw pipe
         for(int i = 0; i < pipesList.size(); i++){
             Pipe pipe = pipesList.get(i);
             g.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height, null);
         }
+    }
 
-        setFont(g,FONT_NAME, Font.BOLD, TEXT_FONT_SIZE, Color.white);
-        if(gameStarted){
-            g.drawString("Score: " + (int)(currentScore) + "    High Score: " + topScore, boardWidth/10, boardHeight/10);
-            // Draw bird
-            g.drawImage(skinList.get(birdSelection).img, bird.x, bird.y, bird.width, bird.height, null);
-        } else {
-            // Draw title shadow
-            setFont(g,FONT_NAME, Font.BOLD, Font.ITALIC, TITLE_FONT_SIZE, Color.black);
-            g.drawString("JUMPING BIRD", TITLE_X_SHADOW, TITLE_Y_SHADOW);
-            // Draw title
-            setFont(g,FONT_NAME, Font.BOLD, Font.ITALIC, TITLE_FONT_SIZE, new Color(255, 204, 0));
-            g.drawString("JUMPING BIRD", TITLE_X, TITLE_Y);
-            setFont(g,FONT_NAME, Font.BOLD, TEXT_FONT_SIZE, Color.white);
-            g.drawString("Press Space to Start!", TITLE_TEXT_X, titleTextY);
-            if(birdSelection != 0) {
-                g.drawImage(leftArrow, leftArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT, null);
-            }
-            if(birdSelection != skinList.size()-1) {
-                g.drawImage(rightArrow, rightArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT, null);
-            }
-            // Draw list of skins
-            g.drawImage(skinList.get(birdSelection).img, birdListX, birdListY, bird.width, bird.height, null);
+    private void drawSkinSelector(Graphics g){
+        if(birdSelection != 0) {
+            g.drawImage(leftArrow, leftArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT, null);
         }
+        if(birdSelection != skinList.size()-1) {
+            g.drawImage(rightArrow, rightArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT, null);
+        }
+        // Draw list of skins
+        g.drawImage(skinList.get(birdSelection).img, birdListX, birdListY, bird.width, bird.height, null);
+    }
+
+    private void drawTitleScreen(Graphics g){
+        // Draw title shadow
+        setFont(g,FONT_NAME, Font.BOLD, Font.ITALIC, TITLE_FONT_SIZE, Color.black);
+        g.drawString("JUMPING BIRD", TITLE_X_SHADOW, TITLE_Y_SHADOW);
+        // Draw title
+        setFont(g,FONT_NAME, Font.BOLD, Font.ITALIC, TITLE_FONT_SIZE, new Color(255, 204, 0));
+        g.drawString("JUMPING BIRD", TITLE_X, TITLE_Y);
+        setFont(g,FONT_NAME, Font.BOLD, TEXT_FONT_SIZE, Color.white);
+        g.drawString("Press Space to Start!", TITLE_TEXT_X, titleTextY);
     }
 
     private void setFont(Graphics g, String fontName, int fontStyle, int fontSize, Color color){
@@ -287,36 +298,15 @@ public class FlappyBird2 extends JPanel implements KeyListener {
         bird.x = BIRD_X;
     }
 
-    private class Bird{
-        int x = startingBirdX;
-        int y = startingBirdY;
-        int height = birdHeight;
-        int width = birdWidth;
-        Image img;
-        private Bird(Image img){
-            this.img = img;
-        }
-    }
-
-    private class Pipe{
-        int x = boardWidth;
-        int y = 0;
-        int height = 512;
-        int width = 64;
-        Image img;
-        boolean passed = false;
-
-        private Pipe(Image img){
-            this.img = img;
-        }
-    }
 
     @Override
     public void keyPressed(KeyEvent e) {
         if(!gameStarted && e.getKeyCode() == KeyEvent.VK_SPACE){
+            resetValues();
             gameStarted = true;
             pipesLoop.start();
             titleLoop.stop();
+            bird = skinList.get(birdSelection);
         }
         if(!gameStarted && e.getKeyCode() == KeyEvent.VK_LEFT
                 && birdSelection != 0){
@@ -326,14 +316,14 @@ public class FlappyBird2 extends JPanel implements KeyListener {
                 && birdSelection != skinList.size()-1){
             birdSelection++;
         }
-
         if(gameOver && e.getKeyCode() == KeyEvent.VK_SPACE){
             resetValues();
             gameOver = false;
-            gameLoop.start();
             pipesLoop.start();
         }
-
+        if(e.getKeyCode() == KeyEvent.VK_P){
+            gameStarted = false;
+        }
         if(e.getKeyCode() == KeyEvent.VK_SPACE){
             jump = JUMP_VALUE;
         }
