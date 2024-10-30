@@ -102,7 +102,11 @@ public class FlappyBird2 extends JPanel implements KeyListener {
         rightArrow = new ImageIcon(getClass().getResource("RightArrow.png")).getImage();
 
         try {
-            saveFile = new File("highScore.txt");
+            String userHome = System.getProperty("user.home");
+            saveFile = new File(userHome + "/JumpingBirdAppData/highScore.txt");
+            saveFile.getParentFile().mkdir();
+            System.out.println(saveFile.getAbsolutePath());
+
             if (saveFile.createNewFile()){
                 fileWriter = new FileWriter(saveFile);
                 fileWriter.write("0");
