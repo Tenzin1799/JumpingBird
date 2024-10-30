@@ -4,7 +4,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class FlappyBird2 extends JPanel implements KeyListener {
     // Board
@@ -17,7 +22,6 @@ public class FlappyBird2 extends JPanel implements KeyListener {
     private boolean gameOver = false;
     private final int JUMP_VALUE = -15;       // at some point maybe make jump values change, so this can be utilized when resetting the stats
     private final int PIPE_SPEED_VALUE = -5;    // Same for this, definitely for this
-    private final int STARTING_SCORE = 0;
     private final int BIRD_X = boardWidth/3;
     private final int BIRD_Y = boardHeight/2;
     private final int STARTING_GAP = boardHeight/4;
@@ -60,8 +64,11 @@ public class FlappyBird2 extends JPanel implements KeyListener {
 
 
     // Scores
-    private double currentScore = STARTING_SCORE;
+    private double currentScore = 0;
     private int topScore = 0;
+    private File saveFile;
+    private FileWriter fileWriter;
+    private Scanner fileReader;
 
 
     // Pipe
@@ -87,12 +94,31 @@ public class FlappyBird2 extends JPanel implements KeyListener {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setRequestFocusEnabled(true);
         addKeyListener(this);
-        bgImg = new ImageIcon(getClass().getResource("/bg.png")).getImage();
+        bgImg = new ImageIcon(getClass().getResource("bg.png")).getImage();
         createListOfSkins();
         bird = skinList.get(birdSelection);
 
-        leftArrow = new ImageIcon(getClass().getResource("/leftArrow.png")).getImage();
-        rightArrow = new ImageIcon(getClass().getResource("/rightArrow.png")).getImage();
+        leftArrow = new ImageIcon(getClass().getResource("LeftArrow.png")).getImage();
+        rightArrow = new ImageIcon(getClass().getResource("RightArrow.png")).getImage();
+
+        try {
+            saveFile = new File("highScore.txt");
+            if (saveFile.createNewFile()){
+                fileWriter = new FileWriter(saveFile);
+                fileWriter.write("0");
+                fileWriter.close();
+                System.out.println("File created.");
+            } else {
+                System.out.println("File found.");
+            }
+            fileReader = new Scanner(saveFile);
+            System.out.println("Reading file");
+            topScore = fileReader.nextInt();
+            System.out.println("Reading saved high score");
+        } catch (Exception e){
+            System.out.println(e);
+        }
+
 
         gameLoop = new Timer(1000 / 60, new ActionListener() {
             @Override
@@ -104,8 +130,8 @@ public class FlappyBird2 extends JPanel implements KeyListener {
         });
         gameLoop.start();
 
-        topPipeImg = new ImageIcon(getClass().getResource("/topPipe.png")).getImage();
-        bottomPipeImg = new ImageIcon(getClass().getResource("/bottomPipe.png")).getImage();
+        topPipeImg = new ImageIcon(getClass().getResource("topPipe.png")).getImage();
+        bottomPipeImg = new ImageIcon(getClass().getResource("bottomPipe.png")).getImage();
         pipesLoop = new Timer(1500, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -123,12 +149,12 @@ public class FlappyBird2 extends JPanel implements KeyListener {
     }
 
     private void createListOfSkins(){
-        skinImageList.add(new ImageIcon(getClass().getResource("/yellowBird.png")).getImage());
-        skinImageList.add(new ImageIcon(getClass().getResource("/greenBird.png")).getImage());
-        skinImageList.add(new ImageIcon(getClass().getResource("/ghostBird.png")).getImage());
-        skinImageList.add(new ImageIcon(getClass().getResource("/blackBird.png")).getImage());
-        skinImageList.add(new ImageIcon(getClass().getResource("/theBat.png")).getImage());
-        skinImageList.add(new ImageIcon(getClass().getResource("/superDude.png")).getImage());
+        skinImageList.add(new ImageIcon(getClass().getResource("yellowBird.png")).getImage());
+        skinImageList.add(new ImageIcon(getClass().getResource("greenBird.png")).getImage());
+        skinImageList.add(new ImageIcon(getClass().getResource("ghostBird.png")).getImage());
+        skinImageList.add(new ImageIcon(getClass().getResource("blackBird.png")).getImage());
+        skinImageList.add(new ImageIcon(getClass().getResource("theBat.png")).getImage());
+        skinImageList.add(new ImageIcon(getClass().getResource("superDude.png")).getImage());
 
         for(int i = 0; i < skinImageList.size(); i++){
             skinList.add(new Bird(skinImageList.get(i), startingBirdX, startingBirdY, birdHeight, birdWidth));
@@ -183,20 +209,25 @@ public class FlappyBird2 extends JPanel implements KeyListener {
             bird.y += jump;
             jump += gravity;
 
-            // Move pipe
-            for (int i = 0; i < pipesList.size(); i++) {
-                Pipe pipe = pipesList.get(i);
-                pipe.x += pipeSpeed;
-                // Detect Collisions
-                collisions(pipe);
-                // Detect passing a pipe
-                if(bird.x > pipe.x + pipe.width){
-                    pipe.passed = true;
-                }
-            }
+            movePipe();
+
             // Detect Game Overs
             if(bird.y + bird.height >= boardHeight){
                 endGame();
+            }
+        }
+    }
+
+    private void movePipe(){
+        // Move pipe
+        for (int i = 0; i < pipesList.size(); i++) {
+            Pipe pipe = pipesList.get(i);
+            pipe.x += pipeSpeed;
+            // Detect Collisions
+            collisions(pipe);
+            // Detect passing a pipe
+            if(bird.x > pipe.x + pipe.width){
+                pipe.passed = true;
             }
         }
     }
@@ -221,6 +252,13 @@ public class FlappyBird2 extends JPanel implements KeyListener {
     private void endGame(){
         if(currentScore > topScore){
             topScore = (int)currentScore;
+            try {
+                fileWriter = new FileWriter(saveFile);
+                fileWriter.write(String.valueOf(topScore));
+                fileWriter.close();
+            } catch (Exception e){
+                System.out.println(e);
+            }
         }
         gameOver = true;
         pipesLoop.stop();
