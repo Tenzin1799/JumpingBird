@@ -101,28 +101,7 @@ public class FlappyBird2 extends JPanel implements KeyListener {
         leftArrow = new ImageIcon(getClass().getResource("LeftArrow.png")).getImage();
         rightArrow = new ImageIcon(getClass().getResource("RightArrow.png")).getImage();
 
-        try {
-            String userHome = System.getProperty("user.home");
-            saveFile = new File(userHome + "/JumpingBirdAppData/highScore.txt");
-            saveFile.getParentFile().mkdir();
-            System.out.println(saveFile.getAbsolutePath());
-
-            if (saveFile.createNewFile()){
-                fileWriter = new FileWriter(saveFile);
-                fileWriter.write("0");
-                fileWriter.close();
-                System.out.println("File created.");
-            } else {
-                System.out.println("File found.");
-            }
-            fileReader = new Scanner(saveFile);
-            System.out.println("Reading file");
-            topScore = fileReader.nextInt();
-            System.out.println("Reading saved high score");
-        } catch (Exception e){
-            System.out.println(e);
-        }
-
+        initializeSavedData();
 
         gameLoop = new Timer(1000 / 60, new ActionListener() {
             @Override
@@ -150,6 +129,30 @@ public class FlappyBird2 extends JPanel implements KeyListener {
             }
         });
         titleLoop.start();
+    }
+
+    private void initializeSavedData(){
+        try {
+            String userHome = System.getProperty("user.home");
+            saveFile = new File(userHome + "/JumpingBirdAppData/highScore.txt");
+            saveFile.getParentFile().mkdir();
+            System.out.println(saveFile.getAbsolutePath());
+
+            if (saveFile.createNewFile()){
+                fileWriter = new FileWriter(saveFile);
+                fileWriter.write("0");
+                fileWriter.close();
+                System.out.println("File created.");
+            } else {
+                System.out.println("File found.");
+            }
+            fileReader = new Scanner(saveFile);
+            System.out.println("Reading file");
+            topScore = fileReader.nextInt();
+            System.out.println("Reading saved high score");
+        } catch (Exception e){
+            System.out.println(e);
+        }
     }
 
     private void createListOfSkins(){
