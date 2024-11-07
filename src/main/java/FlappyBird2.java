@@ -5,12 +5,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * @author Tenzin Nyima
+ * This class handles all the game logic.
+ */
 public class FlappyBird2 extends JPanel implements KeyListener {
     // Board
     private Image bgImg;
@@ -129,7 +131,7 @@ public class FlappyBird2 extends JPanel implements KeyListener {
             }
         });
         titleLoop.start();
-    }
+     }
 
     private void initializeSavedData(){
         try {
@@ -155,6 +157,11 @@ public class FlappyBird2 extends JPanel implements KeyListener {
         }
     }
 
+    /**
+     * This method fills the skinImageList arrayList with the available skin .png images.
+     * Then the method loops through the list and creates a new Bird using the skin images in the skinImageList.
+     * The new bird is added to skinList, a separate arrayList that will be used as the bird for the game.
+     */
     private void createListOfSkins(){
         skinImageList.add(new ImageIcon(getClass().getResource("yellowBird.png")).getImage());
         skinImageList.add(new ImageIcon(getClass().getResource("greenBird.png")).getImage());
@@ -192,6 +199,10 @@ public class FlappyBird2 extends JPanel implements KeyListener {
         }
     }
 
+    /**
+     * This method checks for collisions with the Pipe given.
+     * @param pipe is the pipe to be checked with.
+     */
     private void collisions(Pipe pipe){
         boolean isBirdInPipeXBounds = (bird.x + bird.width > pipe.x && bird.x +bird.width < pipe.x + pipe.width) ||
                 (bird.x > pipe.x && bird.x < pipe.x+pipe.width);
